@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Página - Estilo Combate</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.85)),
+    url("https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1500&q=80");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    color:white;
+}
+
+/* ENCABEZADO */
+
+header{
+    background:#8B0000;
+    padding:25px;
+    text-align:center;
+    border-bottom:4px solid gold;
+    box-shadow:0 0 20px red;
+}
+
+header h1{
+    font-size:45px;
+    letter-spacing:5px;
+    text-shadow:0 0 15px red;
+}
+
+/* CONTENEDOR */
+
+.contenedor{
+    width:90%;
+    margin:auto;
+}
+
+/* TARJETA */
+
+.tarjeta{
+    display:flex;
+    gap:40px;
+    margin-top:40px;
+    background:rgba(0,0,0,.70);
+    border:2px solid red;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 0 20px red;
+}
+
+.imagen{
+    width:320px;
+    height:320px;
+    background:url("https://www.swcolegios.com/swcolpkdjswd/rchvsieswc/22/ftsdsswc/1774900860_2026-03-30.jpg");
+    background-size:cover;
+    background-position:center;
+    border-radius:20px;
+    border:5px solid gold;
+    transition:.5s;
+}
+
+.imagen:hover{
+    transform:scale(1.05);
+}
+
+.info{
+    flex:1;
+}
+
+.info h2{
+    color:gold;
+    font-size:40px;
+    margin-bottom:20px;
+}
+
+.info p{
+    font-size:19px;
+    line-height:35px;
+}
+
+/* BOTONES */
+
+.botones{
+    margin-top:30px;
+}
+
+button{
+    background:red;
+    color:white;
+    border:none;
+    padding:15px 35px;
+    margin:10px;
+    font-size:18px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.4s;
+    font-weight:bold;
+}
+
+button:hover{
+    background:gold;
+    color:black;
+    transform:scale(1.1);
+    box-shadow:0 0 20px gold;
+}
+
+/* TABLA */
+
+.horario{
+    margin-top:50px;
+    background:rgba(0,0,0,.80);
+    padding:25px;
+    border-radius:20px;
+    border:2px solid red;
+    box-shadow:0 0 20px red;
+}
+
+.horario h2{
+    text-align:center;
+    color:gold;
+    margin-bottom:20px;
+    font-size:35px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#8B0000;
+    color:gold;
+}
+
+td{
+    background:#1a1a1a;
+}
+
+th,td{
+    border:2px solid red;
+    padding:12px;
+    text-align:center;
+}
+
+tbody tr:hover{
+    background:#444;
+}
+
+/* PIE */
+
+footer{
+    margin-top:50px;
+    background:black;
+    color:white;
+    text-align:center;
+    padding:20px;
+    border-top:3px solid gold;
+}
+
+@media(max-width:900px){
+
+.tarjeta{
+    flex-direction:column;
+    align-items:center;
+}
+
+.imagen{
+    width:250px;
+    height:250px;
+}
+
+header h1{
+    font-size:30px;
+}
+
+.info h2{
+    text-align:center;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>⚔ ZONA DE COMBATE ⚔</h1>
+</header>
+
+<div class="contenedor">
+
+<div class="tarjeta">
+
+<div class="imagen"></div>
+
+<div class="info" id="info">
+
+<h2>Juan Camilo Rojas</h2>
+
+<p id="texto">
+Mi nombre es Juan Camilo. Me gusta montar skate, dibujar y salir con mis amigos.
+Disfruto escuchar música, comer y descansar. Me esfuerzo por superarme cada día,
+aprender cosas nuevas y alcanzar mis metas. Me considero una persona responsable,
+comprometida y siempre listo para afrontar cualquier reto como un verdadero guerrero.
+</p>
+
+<div class="botones">
+
+<button id="btn-toggle">Ocultar Texto</button>
+
+<button id="btn-color">Cambiar Color</button>
+
+<a href="registro.html">
+<button>Registro</button>
+</a>
+
+<a href="juego.html">
+<button>🎮 Juego</button>
+</a>
+
+<a href="blog.html">
+<button>📖 Blog</button>
+</a>
+
+<a href="tareas.html">
+<button>✅ Tareas</button>
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="horario" id="horario">
+
+<h2>Horario de Clases</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Clase</th>
+<th>Lunes</th>
+<th>Martes</th>
+<th>Miércoles</th>
+<th>Jueves</th>
+<th>Viernes</th>
+<th>Sábado</th>
+<th>Domingo</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<th>1</th>
+<td>Español</td>
+<td>Sociales</td>
+<td>Estadística</td>
+<td>Filosofía</td>
+<td>Dibujo</td>
+<td>Matemáticas</td>
+<td>Sociales</td>
+</tr>
+
+<tr>
+<th>2</th>
+<td>Biología</td>
+<td>Francés</td>
+<td>Español</td>
+<td>Francés</td>
+<td>Dibujo</td>
+<td>Ed. Física</td>
+<td>English</td>
+</tr>
+
+<tr>
+<th>3</th>
+<td>Skills</td>
+<td>Matemáticas</td>
+<td>English</td>
+<td>English</td>
+<td>Sociales</td>
+<td>Biología</td>
+<td>English</td>
+</tr>
+
+<tr>
+<th>4</th>
+<td>Francés</td>
+<td>Informática</td>
+<td>PILEO</td>
+<td>Matemáticas</td>
+<td>Matemáticas</td>
+<td>Física</td>
+<td>Biología</td>
+</tr>
+
+<tr>
+<th>5</th>
+<td>English</td>
+<td>Biología</td>
+<td>Sociales</td>
+<td>Informática</td>
+<td>Danzas</td>
+<td>PILEO</td>
+<td>Matemáticas</td>
+</tr>
+
+<tr>
+<th>6</th>
+<td>Matemáticas</td>
+<td>Ed. Física</td>
+<td>Informática</td>
+<td>Ética</td>
+<td>Español</td>
+<td>Sociales</td>
+<td>Química</td>
+</tr>
+
+<tr>
+<th>7</th>
+<td>Cátedra de Paz</td>
+<td>Español</td>
+<td>Danzas</td>
+<td>Biología</td>
+<td>English</td>
+<td>Sociales</td>
+<td>Español</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<footer>
+⚔ "La victoria pertenece a quien nunca deja de luchar." ⚔
+</footer>
+
+<script>
+
+const botonToggle=document.getElementById("btn-toggle");
+
+botonToggle.onclick=function(){
+
+const apartado=document.getElementById("info");
+
+const titulo=apartado.querySelector("h2");
+
+const texto=apartado.querySelector("p");
+
+const horario=document.getElementById("horario");
+
+if(titulo.style.display=="none"){
+
+titulo.style.display="block";
+
+texto.style.display="block";
+
+horario.style.display="block";
+
+botonToggle.innerHTML="Ocultar Texto";
+
+}else{
+
+titulo.style.display="none";
+
+texto.style.display="none";
+
+horario.style.display="none";
+
+botonToggle.innerHTML="Mostrar Todo";
+
+}
+
+}
+
+const botonColor=document.getElementById("btn-color");
+
+botonColor.onclick=function(){
+
+const colores=["red","gold","cyan","lime","orange","violet","#00ffff","#ff6b9d"];
+
+const color=colores[Math.floor(Math.random()*colores.length)];
+
+const apartado=document.getElementById("info");
+
+apartado.querySelector("h2").style.color=color;
+
+apartado.querySelector("p").style.color=color;
+
+apartado.querySelector("h2").style.transition="color .5s";
+
+apartado.querySelector("p").style.transition="color .5s";
+
+const horario=document.getElementById("horario");
+
+horario.querySelector("h2").style.color=color;
+
+horario.querySelector("h2").style.transition="color .5s";
+
+horario.querySelectorAll("th").forEach(th=>{
+
+th.style.color=color;
+
+th.style.transition="color .5s";
+
+});
+
+horario.querySelectorAll("td").forEach(td=>{
+
+td.style.color=color;
+
+td.style.transition="color .5s";
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
