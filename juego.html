@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON LEGENDS - Battle Arena</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    overflow:hidden;
+    background:#050509;
+    font-family:Arial,Helvetica,sans-serif;
+    color:white;
+}
+
+canvas{
+    display:block;
+    width:100vw;
+    height:100vh;
+    image-rendering:pixelated;
+}
+
+/* =========================
+   MENÚ
+========================= */
+
+#menu{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+        radial-gradient(circle at 50% 20%,#30206d,#0a0818 55%,#020204);
+    overflow:auto;
+}
+
+.menuBox{
+    width:min(1100px,94%);
+    padding:35px;
+    margin:20px;
+    background:rgba(7,7,20,.96);
+    border:3px solid #ff35d0;
+    box-shadow:
+        0 0 20px #ff35d0,
+        0 0 80px #372fff;
+    text-align:center;
+}
+
+.logo{
+    font-size:clamp(42px,7vw,80px);
+    font-weight:900;
+    letter-spacing:5px;
+    color:white;
+    text-shadow:
+        5px 5px #ff2fb7,
+        10px 10px #304cff;
+}
+
+.subtitle{
+    color:#aeb3ff;
+    margin:8px 0 25px;
+}
+
+.roster{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:12px;
+}
+
+.card{
+    min-height:210px;
+    padding:12px 8px;
+    background:#111124;
+    border:2px solid #34345c;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+    border-color:#fff;
+}
+
+.card.selected{
+    border-color:#ffe12b;
+    box-shadow:
+        0 0 15px #ffe12b,
+        inset 0 0 20px #252000;
+    transform:translateY(-7px);
+}
+
+.preview{
+    width:95px;
+    height:125px;
+    margin:auto;
+    position:relative;
+}
+
+.phead{
+    position:absolute;
+    width:43px;
+    height:43px;
+    left:26px;
+    top:5px;
+    background:#e8a27c;
+}
+
+.pbody{
+    position:absolute;
+    width:58px;
+    height:55px;
+    left:19px;
+    top:48px;
+}
+
+.ppants{
+    position:absolute;
+    width:22px;
+    height:40px;
+    left:25px;
+    top:98px;
+    background:#191929;
+}
+
+.ppants2{
+    position:absolute;
+    width:22px;
+    height:40px;
+    left:53px;
+    top:98px;
+    background:#191929;
+}
+
+.pmask{
+    position:absolute;
+    width:52px;
+    height:14px;
+    left:22px;
+    top:25px;
+}
+
+.card h3{
+    margin-top:5px;
+    font-size:17px;
+}
+
+.card p{
+    color:#999;
+    font-size:11px;
+    margin-top:5px;
+}
+
+.red .pbody{background:#e52e4d}
+.red .pmask{background:#ffcc32}
+
+.blue .pbody{background:#287dff}
+.blue .pmask{background:#35d9ff}
+
+.green .pbody{background:#27b56b}
+.green .pmask{background:#b7ff37}
+
+.purple .pbody{background:#7135e8}
+.purple .pmask{background:#ff4eea}
+
+.orange .pbody{background:#ff6927}
+.orange .pmask{background:#ffe02e}
+
+.cyan .pbody{background:#22c6d6}
+.cyan .pmask{background:#d9ffff}
+
+.teamText{
+    margin:18px;
+    color:#ffe43a;
+    font-weight:bold;
+}
+
+button{
+    padding:15px 40px;
+    background:#ff2ab9;
+    color:white;
+    border:3px solid white;
+    font-weight:bold;
+    font-size:18px;
+    cursor:pointer;
+    box-shadow:6px 6px #000;
+}
+
+button:hover{
+    background:#365cff;
+    transform:translate(-2px,-2px);
+}
+
+/* =========================
+   HUD
+========================= */
+
+#hud{
+    display:none;
+    position:fixed;
+    top:12px;
+    left:2%;
+    right:2%;
+    z-index:10;
+    pointer-events:none;
+    justify-content:space-between;
+}
+
+.hudSide{
+    width:42%;
+}
+
+.name{
+    font-size:18px;
+    font-weight:bold;
+    text-shadow:2px 2px #000;
+}
+
+.life{
+    height:28px;
+    border:3px solid white;
+    background:#111;
+    margin-top:4px;
+}
+
+.lifeBar{
+    width:100%;
+    height:100%;
+    background:linear-gradient(90deg,#2cff58,#d8ff38);
+    transition:.15s;
+}
+
+.enemyBar{
+    background:linear-gradient(90deg,#ff263d,#ff8b24);
+}
+
+.energy{
+    height:10px;
+    background:#111;
+    border:2px solid white;
+    margin-top:5px;
+}
+
+.energy div{
+    width:0%;
+    height:100%;
+    background:#24d8ff;
+    box-shadow:0 0 10px #24d8ff;
+}
+
+.teamIcons{
+    display:flex;
+    gap:5px;
+    margin-top:6px;
+}
+
+.icon{
+    width:25px;
+    height:25px;
+    border:2px solid white;
+    background:#222;
+}
+
+.icon.dead{
+    opacity:.25;
+    filter:grayscale(1);
+}
+
+/* =========================
+   COMBO / FIGHT
+========================= */
+
+#fightText{
+    position:fixed;
+    z-index:20;
+    left:50%;
+    top:30%;
+    transform:translate(-50%,-50%);
+    font-size:80px;
+    font-weight:900;
+    opacity:0;
+    pointer-events:none;
+    text-shadow:
+        6px 6px #ff2cba,
+        11px 11px #273bff;
+}
+
+#fightText.show{
+    animation:fight .8s;
+}
+
+@keyframes fight{
+    0%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(.2);
+    }
+    40%{
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.3);
+    }
+    100%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(1);
+    }
+}
+
+#combo{
+    position:fixed;
+    right:7%;
+    top:37%;
+    z-index:15;
+    font-size:45px;
+    font-weight:900;
+    color:#ffe62d;
+    text-shadow:4px 4px #ff1d6e;
+    opacity:0;
+    pointer-events:none;
+}
+
+#combo.show{
+    animation:combo .7s;
+}
+
+@keyframes combo{
+    0%{
+        opacity:0;
+        transform:scale(.2) rotate(-8deg);
+    }
+    35%{
+        opacity:1;
+        transform:scale(1.35) rotate(4deg);
+    }
+    100%{
+        opacity:0;
+        transform:scale(1);
+    }
+}
+
+/* =========================
+   RESULTADO
+========================= */
+
+#result{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    background:rgba(0,0,0,.78);
+}
+
+.resultBox{
+    padding:50px;
+    text-align:center;
+    background:#0c0c20;
+    border:4px solid #ffe12b;
+    box-shadow:0 0 60px #ff28bd;
+}
+
+.resultBox h2{
+    font-size:70px;
+    color:#ffe12b;
+    text-shadow:5px 5px #ff267c;
+}
+
+.resultBox p{
+    margin:20px 0;
+    font-size:20px;
+}
+
+@media(max-width:850px){
+    .roster{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:500px){
+    .roster{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .menuBox{
+        padding:20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<!-- =========================
+     MENÚ
+========================= -->
+
+<div id="menu">
+
+<div class="menuBox">
+
+<div class="logo">NEON LEGENDS</div>
+
+<div class="subtitle">
+⚡ CHOOSE YOUR TEAM ⚡
+</div>
+
+<div class="roster">
+
+<div class="card red" onclick="selectCharacter(0)" id="card0">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>NOVA</h3>
+<p>Equilibrado</p>
+</div>
+
+<div class="card blue" onclick="selectCharacter(1)" id="card1">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>VOLT</h3>
+<p>Velocidad</p>
+</div>
+
+<div class="card green" onclick="selectCharacter(2)" id="card2">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>TITAN</h3>
+<p>Fuerza</p>
+</div>
+
+<div class="card purple" onclick="selectCharacter(3)" id="card3">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>SHADOW</h3>
+<p>Ninja</p>
+</div>
+
+<div class="card orange" onclick="selectCharacter(4)" id="card4">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>BLAZE</h3>
+<p>Fuego</p>
+</div>
+
+<div class="card cyan" onclick="selectCharacter(5)" id="card5">
+<div class="preview">
+<div class="phead"></div>
+<div class="pbody"></div>
+<div class="pmask"></div>
+<div class="ppants"></div>
+<div class="ppants2"></div>
+</div>
+<h3>FROST</h3>
+<p>Hielo</p>
+</div>
+
+</div>
+
+<div class="teamText">
+Selecciona 3 luchadores para tu equipo
+</div>
+
+<button onclick="startGame()">
+⚔ COMENZAR BATALLA
+</button>
+
+</div>
+</div>
+
+
+<!-- =========================
+     HUD
+========================= -->
+
+<div id="hud">
+
+<div class="hudSide">
+
+<div class="name" id="playerName">
+NOVA
+</div>
+
+<div class="life">
+<div id="playerLife" class="lifeBar"></div>
+</div>
+
+<div class="energy">
+<div id="playerEnergy"></div>
+</div>
+
+<div class="teamIcons" id="playerIcons"></div>
+
+</div>
+
+
+<div class="hudSide">
+
+<div class="name" id="enemyName" style="text-align:right">
+BLAZE
+</div>
+
+<div class="life">
+<div id="enemyLife" class="lifeBar enemyBar"></div>
+</div>
+
+<div class="energy">
+<div id="enemyEnergy"></div>
+</div>
+
+<div class="teamIcons" id="enemyIcons"
+style="justify-content:flex-end">
+</div>
+
+</div>
+
+</div>
+
+
+<div id="fightText"></div>
+<div id="combo"></div>
+
+
+<!-- RESULTADO -->
+
+<div id="result">
+
+<div class="resultBox">
+
+<h2 id="resultTitle">
+VICTORIA
+</h2>
+
+<p id="resultMessage">
+</p>
+
+<button onclick="location.reload()">
+REVANCHA
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   CANVAS
+===================================================== */
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let W,H;
+
+function resize(){
+
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+
+}
+
+resize();
+
+window.addEventListener("resize",resize);
+
+
+/* =====================================================
+   PERSONAJES
+===================================================== */
+
+const characters=[
+
+{
+    name:"NOVA",
+    color:"#e52e4d",
+    glow:"#ffcc32",
+    damage:10,
+    speed:6,
+    special:"#ff315f"
+},
+
+{
+    name:"VOLT",
+    color:"#287dff",
+    glow:"#35d9ff",
+    damage:8,
+    speed:8,
+    special:"#27dfff"
+},
+
+{
+    name:"TITAN",
+    color:"#27b56b",
+    glow:"#b7ff37",
+    damage:17,
+    speed:4,
+    special:"#7cff42"
+},
+
+{
+    name:"SHADOW",
+    color:"#7135e8",
+    glow:"#ff4eea",
+    damage:11,
+    speed:7,
+    special:"#b42cff"
+},
+
+{
+    name:"BLAZE",
+    color:"#ff6927",
+    glow:"#ffe02e",
+    damage:14,
+    speed:5,
+    special:"#ff4b20"
+},
+
+{
+    name:"FROST",
+    color:"#22c6d6",
+    glow:"#d9ffff",
+    damage:12,
+    speed:5,
+    special:"#49f4ff"
+}
+
+];
+
+
+/* =====================================================
+   EQUIPOS
+===================================================== */
+
+let selectedTeam=[];
+let enemyTeam=[4,3,5];
+
+function selectCharacter(id){
+
+    if(selectedTeam.includes(id)){
+
+        selectedTeam=
+            selectedTeam.filter(x=>x!==id);
+
+        document
+        .getElementById("card"+id)
+        .classList.remove("selected");
+
+        return;
+
+    }
+
+    if(selectedTeam.length>=3)return;
+
+    selectedTeam.push(id);
+
+    document
+    .getElementById("card"+id)
+    .classList.add("selected");
+
+}
+
+
+/* =====================================================
+   JUGADORES
+===================================================== */
+
+let player;
+let enemy;
+
+function createFighter(id,x,enemy=false){
+
+    let c=characters[id];
+
+    return{
+
+        id:id,
+
+        name:c.name,
+
+        color:c.color,
+
+        glow:c.glow,
+
+        damage:c.damage,
+
+        speed:c.speed,
+
+        special:c.special,
+
+        x:x,
+
+        y:ground(),
+
+        vx:0,
+
+        vy:0,
+
+        hp:100,
+
+        energy:0,
+
+        facing:enemy?-1:1,
+
+        attacking:false,
+
+        attackTimer:0,
+
+        hitTimer:0,
+
+        jumping:false,
+
+        enemy:enemy
+
+    };
+
+}
+
+
+/* =====================================================
+   ESTADO
+===================================================== */
+
+let running=false;
+
+let playerIndex=0;
+let enemyIndex=0;
+
+let particles=[];
+let projectiles=[];
+
+let shake=0;
+let combo=0;
+let comboTimer=0;
+
+let keys={};
+
+
+/* =====================================================
+   INICIO
+===================================================== */
+
+function startGame(){
+
+    if(selectedTeam.length<3){
+
+        alert("Selecciona 3 personajes.");
+
+        return;
+
+    }
+
+    document.getElementById("menu")
+    .style.display="none";
+
+    document.getElementById("hud")
+    .style.display="flex";
+
+    playerIndex=0;
+    enemyIndex=0;
+
+    player=createFighter(
+        selectedTeam[0],
+        W*.22,
+        false
+    );
+
+    enemy=createFighter(
+        enemyTeam[0],
+        W*.78,
+        true
+    );
+
+    running=true;
+
+    updateHUD();
+
+    showFight("READY!");
+
+    setTimeout(()=>{
+        showFight("FIGHT!");
+    },900);
+
+}
+
+
+/* =====================================================
+   TECLADO
+===================================================== */
+
+document.addEventListener("keydown",e=>{
+
+    keys[e.key.toLowerCase()]=true;
+
+    if(!running)return;
+
+    let k=e.key.toLowerCase();
+
+    if(k==="j")
+        attack(10);
+
+    if(k==="k")
+        attack(16);
+
+    if(k==="l")
+        special();
+
+    if(k==="w")
+        jump();
+
+    if(k==="q")
+        switchCharacter();
+
+    if(k==="e")
+        assist();
+
+});
+
+document.addEventListener("keyup",e=>{
+
+    keys[e.key.toLowerCase()]=false;
+
+});
+
+
+/* =====================================================
+   CAMBIO DE PERSONAJE
+===================================================== */
+
+function switchCharacter(){
+
+    if(selectedTeam.length<2)return;
+
+    playerIndex++;
+
+    if(playerIndex>=selectedTeam.length)
+        playerIndex=0;
+
+    player=createFighter(
+        selectedTeam[playerIndex],
+        player.x,
+        false
+    );
+
+    showFight(
+        characters[selectedTeam[playerIndex]].name
+    );
+
+    updateHUD();
+
+}
+
+
+/* =====================================================
+   ASISTENCIA
+===================================================== */
+
+function assist(){
+
+    if(player.energy<25)return;
+
+    player.energy-=25;
+
+    for(let i=0;i<3;i++){
+
+        setTimeout(()=>{
+
+            if(!running)return;
+
+            let d=player.x<enemy.x?1:-1;
+
+            enemy.hp-=8;
+
+            hitEffect(
+                enemy.x+d*30,
+                enemy.y-100,
+                player.glow
+            );
+
+            shake=10;
+
+            if(enemy.hp<=0){
+
+                enemy.hp=0;
+                nextEnemy();
+
+            }
+
+        },i*120);
+
+    }
+
+}
+
+
+/* =====================================================
+   ATAQUE
+===================================================== */
+
+function attack(damage){
+
+    if(player.attacking)return;
+
+    player.attacking=true;
+    player.attackTimer=15;
+
+    let distance=
+        Math.abs(player.x-enemy.x);
+
+    if(distance<155){
+
+        enemy.hp-=damage;
+
+        enemy.hitTimer=12;
+
+        player.energy=
+            Math.min(100,player.energy+10);
+
+        combo++;
+        comboTimer=90;
+
+        showCombo();
+
+        hitEffect(
+            enemy.x,
+            enemy.y-105,
+            player.glow
+        );
+
+        shake=9;
+
+        if(enemy.hp<=0){
+
+            enemy.hp=0;
+
+            nextEnemy();
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   ESPECIAL
+===================================================== */
+
+function special(){
+
+    if(player.energy<50)return;
+
+    player.energy-=50;
+
+    projectiles.push({
+
+        x:player.x+player.facing*50,
+
+        y:player.y-120,
+
+        vx:player.facing*13,
+
+        life:70,
+
+        radius:30,
+
+        color:player.special,
+
+        owner:"player"
+
+    });
+
+}
+
+
+/* =====================================================
+   SALTO
+===================================================== */
+
+function jump(){
+
+    if(player.jumping)return;
+
+    player.vy=-17;
+    player.jumping=true;
+
+}
+
+
+/* =====================================================
+   IA
+===================================================== */
+
+function enemyAI(){
+
+    let distance=player.x-enemy.x;
+
+    enemy.facing=
+        distance>0?1:-1;
+
+    if(Math.abs(distance)>145){
+
+        enemy.vx=
+            distance>0
+            ? enemy.speed*.45
+            : -enemy.speed*.45;
+
+    }else{
+
+        enemy.vx=0;
+
+        if(Math.random()<.035){
+
+            enemyAttack();
+
+        }
+
+        if(enemy.energy>=50 &&
+           Math.random()<.015){
+
+            enemySpecial();
+
+        }
+
+    }
+
+}
+
+
+function enemyAttack(){
+
+    if(enemy.attacking)return;
+
+    enemy.attacking=true;
+    enemy.attackTimer=18;
+
+    if(
+        Math.abs(player.x-enemy.x)<150
+    ){
+
+        player.hp-=enemy.damage*.6;
+
+        player.hitTimer=12;
+
+        enemy.energy=
+            Math.min(100,enemy.energy+10);
+
+        hitEffect(
+            player.x,
+            player.y-100,
+            enemy.glow
+        );
+
+        shake=8;
+
+        if(player.hp<=0){
+
+            player.hp=0;
+
+            nextPlayer();
+
+        }
+
+    }
+
+}
+
+
+function enemySpecial(){
+
+    enemy.energy-=50;
+
+    projectiles.push({
+
+        x:enemy.x-enemy.facing*40,
+
+        y:enemy.y-120,
+
+        vx:enemy.facing*10,
+
+        life:65,
+
+        radius:27,
+
+        color:enemy.special,
+
+        owner:"enemy"
+
+    });
+
+}
+
+
+/* =====================================================
+   SIGUIENTE LUCHADOR
+===================================================== */
+
+function nextEnemy(){
+
+    enemyIndex++;
+
+    if(enemyIndex>=enemyTeam.length){
+
+        finish(true);
+
+        return;
+
+    }
+
+    enemy=createFighter(
+        enemyTeam[enemyIndex],
+        W*.78,
+        true
+    );
+
+    combo=0;
+
+    showFight(
+        characters[enemyTeam[enemyIndex]].name
+    );
+
+    updateHUD();
+
+}
+
+
+function nextPlayer(){
+
+    playerIndex++;
+
+    if(playerIndex>=selectedTeam.length){
+
+        finish(false);
+
+        return;
+
+    }
+
+    player=createFighter(
+        selectedTeam[playerIndex],
+        W*.22,
+        false
+    );
+
+    combo=0;
+
+    showFight(
+        characters[selectedTeam[playerIndex]].name
+    );
+
+    updateHUD();
+
+}
+
+
+/* =====================================================
+   FÍSICA
+===================================================== */
+
+function update(){
+
+    if(!running)return;
+
+    /* JUGADOR */
+
+    player.vx=0;
+
+    if(keys["a"]){
+
+        player.vx=-player.speed;
+        player.facing=-1;
+
+    }
+
+    if(keys["d"]){
+
+        player.vx=player.speed;
+        player.facing=1;
+
+    }
+
+    player.x+=player.vx;
+
+    player.vy+=.8;
+    player.y+=player.vy;
+
+    if(player.y>=ground()){
+
+        player.y=ground();
+        player.vy=0;
+        player.jumping=false;
+
+    }
+
+    player.x=
+        Math.max(60,
+        Math.min(W-60,player.x));
+
+
+    /* ENEMIGO */
+
+    enemyAI();
+
+    enemy.x+=enemy.vx;
+
+    enemy.x=
+        Math.max(60,
+        Math.min(W-60,enemy.x));
+
+
+    /* ATAQUE */
+
+    if(player.attackTimer>0){
+
+        player.attackTimer--;
+
+    }else{
+
+        player.attacking=false;
+
+    }
+
+    if(enemy.attackTimer>0){
+
+        enemy.attackTimer--;
+
+    }else{
+
+        enemy.attacking=false;
+
+    }
+
+
+    /* COOLDOWNS */
+
+    if(player.hitTimer>0)
+        player.hitTimer--;
+
+    if(enemy.hitTimer>0)
+        enemy.hitTimer--;
+
+
+    /* COMBO */
+
+    if(comboTimer>0)
+        comboTimer--;
+    else
+        combo=0;
+
+
+    /* PROYECTILES */
+
+    projectiles.forEach(p=>{
+
+        p.x+=p.vx;
+        p.life--;
+
+        let target=
+            p.owner==="player"
+            ? enemy
+            : player;
+
+        if(
+            Math.abs(p.x-target.x)<55 &&
+            Math.abs(p.y-(target.y-110))<90
+        ){
+
+            target.hp-=25;
+
+            p.life=0;
+
+            hitEffect(
+                target.x,
+                target.y-110,
+                p.color
+            );
+
+            shake=15;
+
+            if(target.hp<=0){
+
+                target.hp=0;
+
+                if(target===enemy)
+                    nextEnemy();
+                else
+                    nextPlayer();
+
+            }
+
+        }
+
+    });
+
+    projectiles=
+        projectiles.filter(p=>p.life>0);
+
+
+    /* PARTICULAS */
+
+    particles.forEach(p=>{
+
+        p.x+=p.vx;
+        p.y+=p.vy;
+
+        p.vy+=.15;
+
+        p.life--;
+
+    });
+
+    particles=
+        particles.filter(p=>p.life>0);
+
+
+    if(shake>0)
+        shake--;
+
+    updateHUD();
+
+}
+
+
+/* =====================================================
+   ESCENARIO
+===================================================== */
+
+function ground(){
+
+    return H*.74;
+
+}
+
+
+function drawBackground(){
+
+    let g=
+        ctx.createLinearGradient(
+            0,0,0,H
+        );
+
+    g.addColorStop(0,"#05051b");
+    g.addColorStop(.5,"#23104b");
+    g.addColorStop(1,"#120714");
+
+    ctx.fillStyle=g;
+
+    ctx.fillRect(0,0,W,H);
+
+
+    /* LUNA */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        W*.78,
+        H*.19,
+        75,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle="#fff2a1";
+
+    ctx.shadowBlur=50;
+    ctx.shadowColor="#ffe36e";
+
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+
+    /* ESTRELLAS */
+
+    for(let i=0;i<110;i++){
+
+        let x=(i*83)%W;
+        let y=(i*37)%(H*.55);
+
+        ctx.fillStyle=
+            i%3===0
+            ? "#57eaff"
+            : "#fff";
+
+        ctx.fillRect(
+            x,
+            y,
+            2,
+            2
+        );
+
+    }
+
+
+    /* CIUDAD */
+
+    let count=15;
+
+    for(let i=0;i<count;i++){
+
+        let bw=70+(i%4)*25;
+        let bh=120+(i%6)*40;
+
+        let x=i*(W/count);
+
+        ctx.fillStyle=
+            i%2
+            ? "#0c0c27"
+            : "#111132";
+
+        ctx.fillRect(
+            x,
+            ground()-bh,
+            bw,
+            bh
+        );
+
+
+        for(
+            let y=ground()-bh+20;
+            y<ground()-20;
+            y+=32
+        ){
+
+            for(
+                let xx=x+10;
+                xx<x+bw-10;
+                xx+=22
+            ){
+
+                if(
+                    (i+Math.floor(y/32))%3!==0
+                ){
+
+                    ctx.fillStyle=
+                        (i+y)%2
+                        ? "#ffe349"
+                        : "#2ddfff";
+
+                    ctx.fillRect(
+                        xx,
+                        y,
+                        7,
+                        11
+                    );
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    /* SUELO */
+
+    ctx.fillStyle="#07070b";
+
+    ctx.fillRect(
+        0,
+        ground(),
+        W,
+        H-ground()
+    );
+
+
+    /* PERSPECTIVA */
+
+    ctx.strokeStyle="#25253c";
+    ctx.lineWidth=2;
+
+    for(let x=-W;x<W*2;x+=90){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            W/2,
+            ground()
+        );
+
+        ctx.lineTo(
+            x,
+            H
+        );
+
+        ctx.stroke();
+
+    }
+
+    for(
+        let y=ground();
+        y<H;
+        y+=35
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(0,y);
+        ctx.lineTo(W,y);
+
+        ctx.stroke();
+
+    }
+
+
+    /* BORDE */
+
+    ctx.fillStyle="#ff2bc5";
+
+    ctx.fillRect(
+        0,
+        ground(),
+        W,
+        5
+    );
+
+}
+
+
+/* =====================================================
+   PERSONAJE
+===================================================== */
+
+function drawFighter(p){
+
+    ctx.save();
+
+    ctx.translate(
+        p.x,
+        p.y
+    );
+
+    /* sombra */
+
+    ctx.fillStyle="rgba(0,0,0,.55)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        5,
+        55,
+        14,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    ctx.scale(
+        p.facing,
+        1
+    );
+
+
+    /* brillo al recibir */
+
+    if(p.hitTimer>0){
+
+        ctx.shadowBlur=30;
+        ctx.shadowColor="#fff";
+
+    }
+
+
+    /* CAPA / AURA */
+
+    if(
+        p.energy>=50
+    ){
+
+        ctx.strokeStyle=p.glow;
+        ctx.lineWidth=5;
+
+        ctx.globalAlpha=.4;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            -100,
+            75+Math.sin(Date.now()/100)*8,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+        ctx.globalAlpha=1;
+
+    }
+
+
+    /* piernas */
+
+    ctx.fillStyle="#161623";
+
+    ctx.fillRect(
+        -30,
+        -58,
+        22,
+        58
+    );
+
+    ctx.fillRect(
+        8,
+        -58,
+        22,
+        58
+    );
+
+
+    /* botas */
+
+    ctx.fillStyle="#08080c";
+
+    ctx.fillRect(
+        -40,
+        -5,
+        35,
+        14
+    );
+
+    ctx.fillRect(
+        7,
+        -5,
+        35,
+        14
+    );
+
+
+    /* cuerpo */
+
+    ctx.fillStyle=
+        p.hitTimer>0
+        ? "#fff"
+        : p.color;
+
+    ctx.fillRect(
+        -38,
+        -128,
+        76,
+        72
+    );
+
+
+    /* pecho */
+
+    ctx.fillStyle=p.glow;
+
+    ctx.fillRect(
+        -25,
+        -115,
+        50,
+        15
+    );
+
+
+    /* brazos */
+
+    ctx.fillStyle=
+        p.hitTimer>0
+        ? "#fff"
+        : "#e69c76";
+
+    ctx.fillRect(
+        -60,
+        -122,
+        22,
+        65
+    );
+
+    ctx.fillRect(
+        38,
+        -122,
+        22,
+        65
+    );
+
+
+    /* guantes */
+
+    ctx.fillStyle=p.glow;
+
+    ctx.fillRect(
+        -65,
+        -63,
+        29,
+        18
+    );
+
+    ctx.fillRect(
+        36,
+        -63,
+        29,
+        18
+    );
+
+
+    /* cuello */
+
+    ctx.fillStyle="#d88968";
+
+    ctx.fillRect(
+        -14,
+        -143,
+        28,
+        20
+    );
+
+
+    /* cabeza */
+
+    ctx.fillStyle=
+        p.hitTimer>0
+        ? "#fff"
+        : "#e9a27d";
+
+    ctx.fillRect(
+        -36,
+        -190,
+        72,
+        48
+    );
+
+
+    /* cabello / casco */
+
+    ctx.fillStyle=p.glow;
+
+    ctx.fillRect(
+        -40,
+        -200,
+        80,
+        22
+    );
+
+    ctx.fillRect(
+        -31,
+        -211,
+        62,
+        13
+    );
+
+
+    /* ojos */
+
+    ctx.fillStyle="#fff";
+
+    ctx.fillRect(
+        -22,
+        -169,
+        13,
+        7
+    );
+
+    ctx.fillRect(
+        10,
+        -169,
+        13,
+        7
+    );
+
+
+    /* ataque */
+
+    if(p.attacking){
+
+        ctx.strokeStyle=p.glow;
+
+        ctx.lineWidth=10;
+
+        ctx.shadowBlur=25;
+        ctx.shadowColor=p.glow;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            63,
+            -105,
+            38,
+            -1,
+            1
+        );
+
+        ctx.stroke();
+
+        ctx.shadowBlur=0;
+
+    }
+
+
+    /* nombre */
+
+    ctx.scale(p.facing,1);
+
+    ctx.textAlign="center";
+
+    ctx.font="bold 15px Arial";
+
+    ctx.fillStyle="#fff";
+
+    ctx.fillText(
+        p.name,
+        0,
+        -225
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   PROYECTILES
+===================================================== */
+
+function drawProjectiles(){
+
+    projectiles.forEach(p=>{
+
+        ctx.save();
+
+        ctx.translate(
+            p.x,
+            p.y
+        );
+
+        ctx.shadowBlur=30;
+        ctx.shadowColor=p.color;
+
+        let g=
+            ctx.createRadialGradient(
+                0,0,3,
+                0,0,p.radius
+            );
+
+        g.addColorStop(0,"#fff");
+        g.addColorStop(.25,p.color);
+        g.addColorStop(1,"transparent");
+
+        ctx.fillStyle=g;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            p.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    });
+
+}
+
+
+/* =====================================================
+   PARTICULAS
+===================================================== */
+
+function hitEffect(x,y,color){
+
+    for(let i=0;i<35;i++){
+
+        particles.push({
+
+            x:x,
+
+            y:y,
+
+            vx:
+                (Math.random()-.5)*16,
+
+            vy:
+                (Math.random()-.5)*16,
+
+            life:
+                15+Math.random()*30,
+
+            size:
+                3+Math.random()*8,
+
+            color:color
+
+        });
+
+    }
+
+}
+
+
+function drawParticles(){
+
+    particles.forEach(p=>{
+
+        ctx.globalAlpha=
+            Math.max(0,p.life/40);
+
+        ctx.fillStyle=p.color;
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.size,
+            p.size
+        );
+
+    });
+
+    ctx.globalAlpha=1;
+
+}
+
+
+/* =====================================================
+   HUD
+===================================================== */
+
+function updateHUD(){
+
+    if(!player || !enemy)return;
+
+    document.getElementById("playerName")
+    .innerText=player.name;
+
+    document.getElementById("enemyName")
+    .innerText=enemy.name;
+
+    document.getElementById("playerLife")
+    .style.width=
+        Math.max(0,player.hp)+"%";
+
+    document.getElementById("enemyLife")
+    .style.width=
+        Math.max(0,enemy.hp)+"%";
+
+    document.getElementById("playerEnergy")
+    .style.width=
+        player.energy+"%";
+
+    document.getElementById("enemyEnergy")
+    .style.width=
+        enemy.energy+"%";
+
+
+    let pi=
+        document.getElementById("playerIcons");
+
+    pi.innerHTML="";
+
+    selectedTeam.forEach((id,i)=>{
+
+        let icon=document.createElement("div");
+
+        icon.className="icon";
+
+        if(i<playerIndex)
+            icon.classList.add("dead");
+
+        icon.style.background=
+            characters[id].color;
+
+        pi.appendChild(icon);
+
+    });
+
+
+    let ei=
+        document.getElementById("enemyIcons");
+
+    ei.innerHTML="";
+
+    enemyTeam.forEach((id,i)=>{
+
+        let icon=document.createElement("div");
+
+        icon.className="icon";
+
+        if(i<enemyIndex)
+            icon.classList.add("dead");
+
+        icon.style.background=
+            characters[id].color;
+
+        ei.appendChild(icon);
+
+    });
+
+}
+
+
+/* =====================================================
+   TEXTO
+===================================================== */
+
+function showFight(text){
+
+    let el=
+        document.getElementById("fightText");
+
+    el.innerText=text;
+
+    el.classList.remove("show");
+
+    void el.offsetWidth;
+
+    el.classList.add("show");
+
+}
+
+
+function showCombo(){
+
+    let el=
+        document.getElementById("combo");
+
+    el.innerText=
+        combo+" HIT COMBO!";
+
+    el.classList.remove("show");
+
+    void el.offsetWidth;
+
+    el.classList.add("show");
+
+}
+
+
+/* =====================================================
+   FINAL
+===================================================== */
+
+function finish(win){
+
+    running=false;
+
+    setTimeout(()=>{
+
+        document.getElementById("result")
+        .style.display="flex";
+
+        if(win){
+
+            document.getElementById("resultTitle")
+            .innerText="VICTORIA!";
+
+            document.getElementById("resultMessage")
+            .innerText=
+                "🔥 ¡Tu equipo conquistó la arena!";
+
+        }else{
+
+            document.getElementById("resultTitle")
+            .innerText="DERROTA";
+
+            document.getElementById("resultMessage")
+            .innerText=
+                "💥 El equipo rival ganó el combate.";
+
+        }
+
+    },500);
+
+}
+
+
+/* =====================================================
+   DIBUJO
+===================================================== */
+
+function draw(){
+
+    ctx.save();
+
+    if(shake>0){
+
+        ctx.translate(
+            (Math.random()-.5)*shake,
+            (Math.random()-.5)*shake
+        );
+
+    }
+
+    drawBackground();
+
+    if(player)
+        drawFighter(player);
+
+    if(enemy)
+        drawFighter(enemy);
+
+    drawProjectiles();
+
+    drawParticles();
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   GAME LOOP
+===================================================== */
+
+function loop(){
+
+    update();
+
+    draw();
+
+    requestAnimationFrame(loop);
+
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
