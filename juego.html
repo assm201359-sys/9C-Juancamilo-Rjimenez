@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titan Boxing</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    overflow:hidden;
+    background:#050609;
+    font-family:Arial,sans-serif;
+    color:white;
+}
+
+canvas{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+}
+
+/* ================= MENU ================= */
+
+.screen{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:
+        radial-gradient(circle at center,
+        rgba(220,20,55,.18),
+        #050609 70%);
+}
+
+.hidden{
+    display:none !important;
+}
+
+.logo{
+    font-size:90px;
+    font-weight:1000;
+    font-style:italic;
+    letter-spacing:8px;
+    text-shadow:
+        4px 4px 0 #b91435,
+        0 0 30px #ff2048;
+}
+
+.sub{
+    color:#aaa;
+    letter-spacing:6px;
+    margin-bottom:30px;
+}
+
+.menu{
+    width:850px;
+    max-width:90%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.box{
+    background:#11141b;
+    border:1px solid #393d47;
+    padding:20px;
+    border-radius:10px;
+}
+
+.box h2{
+    color:#aaa;
+    font-size:15px;
+    letter-spacing:3px;
+    margin-bottom:12px;
+}
+
+.options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.option{
+    padding:15px;
+    background:#181b22;
+    border:2px solid #30343e;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.option:hover{
+    transform:translateY(-2px);
+    border-color:#e72b4b;
+}
+
+.option.selected{
+    background:#4d1422;
+    border-color:#ff3153;
+    box-shadow:0 0 15px rgba(255,40,70,.35);
+}
+
+.option b{
+    display:block;
+    margin-bottom:5px;
+}
+
+.option small{
+    color:#999;
+}
+
+.start{
+    margin-top:25px;
+    padding:16px 60px;
+    border:2px solid #ff3153;
+    background:#bd1436;
+    color:white;
+    font-size:19px;
+    font-weight:bold;
+    letter-spacing:2px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.start:hover{
+    background:#e51d43;
+    transform:scale(1.05);
+}
+
+/* ================= HUD ================= */
+
+#hud{
+    position:fixed;
+    inset:0;
+    z-index:5;
+    pointer-events:none;
+}
+
+.top{
+    position:absolute;
+    top:20px;
+    left:25px;
+    right:25px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.fighterHUD{
+    width:35%;
+}
+
+.name{
+    font-size:18px;
+    font-weight:bold;
+    letter-spacing:3px;
+    margin-bottom:6px;
+}
+
+.healthBar{
+    height:23px;
+    border:2px solid white;
+    background:#111;
+}
+
+.health{
+    height:100%;
+    width:100%;
+    background:linear-gradient(90deg,#ff173b,#ff763c);
+    transition:.1s;
+}
+
+.energyBar{
+    margin-top:5px;
+    height:6px;
+    background:#171a22;
+}
+
+.energy{
+    height:100%;
+    width:100%;
+    background:#00d9ff;
+}
+
+.center{
+    position:absolute;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+}
+
+.round{
+    color:#aaa;
+    font-size:12px;
+    letter-spacing:3px;
+}
+
+.timer{
+    font-size:42px;
+    font-weight:bold;
+}
+
+.score{
+    color:#888;
+    font-size:12px;
+}
+
+.combo{
+    position:absolute;
+    top:130px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:35px;
+    font-weight:bold;
+    font-style:italic;
+    text-shadow:0 0 20px red;
+    opacity:0;
+}
+
+.status{
+    position:absolute;
+    bottom:25px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#aaa;
+    letter-spacing:3px;
+}
+
+.controls{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    color:#777;
+    font-size:11px;
+    line-height:1.7;
+}
+
+/* ================= RESULTADO ================= */
+
+.resultTitle{
+    font-size:70px;
+    font-weight:1000;
+    font-style:italic;
+    text-shadow:
+        4px 4px 0 #b91435,
+        0 0 30px red;
+}
+
+.resultText{
+    color:#aaa;
+    letter-spacing:4px;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- ================= MENU ================= -->
+
+<div id="menu" class="screen">
+
+    <div class="logo">TITAN</div>
+    <div class="logo" style="font-size:55px;">
+        BOXING
+    </div>
+
+    <div class="sub">
+        CHAMPIONSHIP
+    </div>
+
+    <div class="menu">
+
+        <div class="box">
+
+            <h2>MODO</h2>
+
+            <div class="options">
+
+                <div class="option selected"
+                     data-mode="quick"
+                     onclick="chooseMode(this)">
+                    <b>⚡ RÁPIDO</b>
+                    <small>Una pelea</small>
+                </div>
+
+                <div class="option"
+                     data-mode="career"
+                     onclick="chooseMode(this)">
+                    <b>🏆 CARRERA</b>
+                    <small>5 rivales</small>
+                </div>
+
+                <div class="option"
+                     data-mode="survival"
+                     onclick="chooseMode(this)">
+                    <b>💀 SUPERVIVENCIA</b>
+                    <small>Enemigos infinitos</small>
+                </div>
+
+                <div class="option"
+                     data-mode="time"
+                     onclick="chooseMode(this)">
+                    <b>⏱ CONTRARRELOJ</b>
+                    <small>90 segundos</small>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="box">
+
+            <h2>DIFICULTAD</h2>
+
+            <div class="options">
+
+                <div class="option selected"
+                     data-difficulty="easy"
+                     onclick="chooseDifficulty(this)">
+                    <b>🟢 FÁCIL</b>
+                    <small>IA lenta</small>
+                </div>
+
+                <div class="option"
+                     data-difficulty="normal"
+                     onclick="chooseDifficulty(this)">
+                    <b>🟡 NORMAL</b>
+                    <small>Equilibrado</small>
+                </div>
+
+                <div class="option"
+                     data-difficulty="hard"
+                     onclick="chooseDifficulty(this)">
+                    <b>🔴 DIFÍCIL</b>
+                    <small>IA agresiva</small>
+                </div>
+
+                <div class="option"
+                     data-difficulty="nightmare"
+                     onclick="chooseDifficulty(this)">
+                    <b>☠️ PESADILLA</b>
+                    <small>Muy difícil</small>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <button class="start" onclick="startGame()">
+        ENTRAR AL RING
+    </button>
+
+</div>
+
+<!-- ================= HUD ================= -->
+
+<div id="hud" class="hidden">
+
+    <div class="top">
+
+        <div class="fighterHUD">
+
+            <div class="name">
+                TITAN
+            </div>
+
+            <div class="healthBar">
+                <div id="playerHealth"
+                     class="health">
+                </div>
+            </div>
+
+            <div class="energyBar">
+                <div id="playerEnergy"
+                     class="energy">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="fighterHUD">
+
+            <div class="name" style="text-align:right;">
+                <span id="enemyName">
+                    BLAZE
+                </span>
+            </div>
+
+            <div class="healthBar">
+                <div id="enemyHealth"
+                     class="health">
+                </div>
+            </div>
+
+            <div class="energyBar">
+                <div id="enemyEnergy"
+                     class="energy"
+                     style="float:right;">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="center">
+
+        <div class="round">
+            ROUND <span id="round">1</span>
+        </div>
+
+        <div id="timer"
+             class="timer">
+            60
+        </div>
+
+        <div class="score">
+            PUNTOS:
+            <span id="score">0</span>
+        </div>
+
+    </div>
+
+    <div id="combo"
+         class="combo">
+    </div>
+
+    <div id="status"
+         class="status">
+        LISTO
+    </div>
+
+    <div class="controls">
+        A / D → MOVER<br>
+        W → ESQUIVAR<br>
+        J → GOLPE IZQUIERDO<br>
+        K → GOLPE DERECHO<br>
+        L → BLOQUEAR
+    </div>
+
+</div>
+
+<!-- ================= RESULTADO ================= -->
+
+<div id="resultScreen"
+     class="screen hidden">
+
+    <div id="resultTitle"
+         class="resultTitle">
+        ¡VICTORIA!
+    </div>
+
+    <div id="resultText"
+         class="resultText">
+        CAMPEÓN DEL RING
+    </div>
+
+    <button class="start"
+            onclick="location.reload()">
+        REVANCHA
+    </button>
+
+</div>
+
+<script>
+
+/* =====================================================
+   CONFIGURACIÓN
+===================================================== */
+
+const canvas =
+    document.getElementById("game");
+
+const ctx =
+    canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+canvas.width = W;
+canvas.height = H;
+
+window.addEventListener("resize", () => {
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W;
+    canvas.height = H;
+
+});
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+let selectedMode = "quick";
+let selectedDifficulty = "easy";
+
+let playing = false;
+let gameOver = false;
+
+let time = 60;
+let timerCounter = 0;
+
+let score = 0;
+let round = 1;
+
+let careerEnemy = 0;
+
+let particles = [];
+let floatingTexts = [];
+
+const keys = {};
+
+/* =====================================================
+   DIFICULTADES
+===================================================== */
+
+const difficultyData = {
+
+    easy:{
+        speed:1.1,
+        reaction:90,
+        chance:.35,
+        damage:5
+    },
+
+    normal:{
+        speed:1.7,
+        reaction:60,
+        chance:.55,
+        damage:7
+    },
+
+    hard:{
+        speed:2.4,
+        reaction:40,
+        chance:.75,
+        damage:9
+    },
+
+    nightmare:{
+        speed:3,
+        reaction:22,
+        chance:.9,
+        damage:11
+    }
+
+};
+
+/* =====================================================
+   RIVALES
+===================================================== */
+
+const enemies = [
+
+    {
+        name:"BLAZE",
+        health:100,
+        color:"#d92343"
+    },
+
+    {
+        name:"IRON",
+        health:120,
+        color:"#9299a5"
+    },
+
+    {
+        name:"VIPER",
+        health:110,
+        color:"#20bd77"
+    },
+
+    {
+        name:"SHADOW",
+        health:135,
+        color:"#7138d8"
+    },
+
+    {
+        name:"CHAMPION",
+        health:160,
+        color:"#e4b52c"
+    }
+
+];
+
+/* =====================================================
+   JUGADORES
+===================================================== */
+
+const player = {
+
+    x:0,
+    y:0,
+
+    health:100,
+    maxHealth:100,
+
+    energy:100,
+
+    facing:1,
+
+    attack:null,
+    attackTimer:0,
+    cooldown:0,
+
+    blocking:false,
+    dodging:0,
+
+    combo:0,
+    comboTimer:0,
+
+    hit:0
+
+};
+
+const enemy = {
+
+    x:0,
+    y:0,
+
+    health:100,
+    maxHealth:100,
+
+    energy:100,
+
+    facing:-1,
+
+    attack:null,
+    attackTimer:0,
+    cooldown:0,
+
+    blocking:false,
+    dodging:0,
+
+    combo:0,
+    comboTimer:0,
+
+    hit:0,
+
+    aiTimer:0,
+
+    color:"#d92343",
+    name:"BLAZE"
+
+};
+
+/* =====================================================
+   TECLADO
+===================================================== */
+
+document.addEventListener("keydown", e => {
+
+    keys[e.key.toLowerCase()] = true;
+
+});
+
+document.addEventListener("keyup", e => {
+
+    keys[e.key.toLowerCase()] = false;
+
+});
+
+/* =====================================================
+   SELECCIÓN
+===================================================== */
+
+function chooseMode(element){
+
+    selectedMode =
+        element.dataset.mode;
+
+    document
+        .querySelectorAll("[data-mode]")
+        .forEach(option => {
+
+            option.classList.remove(
+                "selected"
+            );
+
+        });
+
+    element.classList.add(
+        "selected"
+    );
+
+}
+
+function chooseDifficulty(element){
+
+    selectedDifficulty =
+        element.dataset.difficulty;
+
+    document
+        .querySelectorAll("[data-difficulty]")
+        .forEach(option => {
+
+            option.classList.remove(
+                "selected"
+            );
+
+        });
+
+    element.classList.add(
+        "selected"
+    );
+
+}
+
+/* =====================================================
+   INICIAR
+===================================================== */
+
+function startGame(){
+
+    document
+        .getElementById("menu")
+        .classList.add("hidden");
+
+    document
+        .getElementById("hud")
+        .classList.remove("hidden");
+
+    playing = true;
+    gameOver = false;
+
+    careerEnemy = 0;
+    round = 1;
+    score = 0;
+
+    setupFight();
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+/* =====================================================
+   CONFIGURAR PELEA
+===================================================== */
+
+function setupFight(){
+
+    let data;
+
+    if(selectedMode === "career"){
+
+        data =
+            enemies[
+                Math.min(
+                    careerEnemy,
+                    enemies.length - 1
+                )
+            ];
+
+    }else{
+
+        data =
+            enemies[
+                Math.floor(
+                    Math.random() *
+                    enemies.length
+                )
+            ];
+
+    }
+
+    enemy.name = data.name;
+    enemy.color = data.color;
+
+    let multiplier = 1;
+
+    if(selectedDifficulty === "hard")
+        multiplier = 1.15;
+
+    if(selectedDifficulty === "nightmare")
+        multiplier = 1.35;
+
+    enemy.maxHealth =
+        data.health * multiplier;
+
+    enemy.health =
+        enemy.maxHealth;
+
+    player.health = 100;
+    player.energy = 100;
+
+    enemy.energy = 100;
+
+    player.x = W * .36;
+    player.y = H * .69;
+
+    enemy.x = W * .64;
+    enemy.y = H * .69;
+
+    player.attack = null;
+    enemy.attack = null;
+
+    player.blocking = false;
+    enemy.blocking = false;
+
+    player.dodging = 0;
+    enemy.dodging = 0;
+
+    time =
+        selectedMode === "time"
+        ? 90
+        : 60;
+
+    document.getElementById(
+        "enemyName"
+    ).textContent = enemy.name;
+
+    document.getElementById(
+        "round"
+    ).textContent = round;
+
+}
+
+/* =====================================================
+   ATAQUE
+===================================================== */
+
+function attack(fighter,type){
+
+    if(
+        fighter.cooldown > 0 ||
+        fighter.attack !== null ||
+        fighter.blocking ||
+        fighter.dodging > 0
+    ){
+        return;
+    }
+
+    fighter.attack = type;
+
+    fighter.attackTimer =
+        type === "left"
+        ? 20
+        : 28;
+
+    fighter.cooldown =
+        type === "left"
+        ? 18
+        : 27;
+
+}
+
+/* =====================================================
+   JUGADOR
+===================================================== */
+
+function updatePlayer(){
+
+    player.blocking =
+        keys["l"] &&
+        player.attack === null;
+
+    if(
+        keys["a"] &&
+        !player.blocking &&
+        !player.attack
+    ){
+
+        player.x -= 4;
+        player.facing = -1;
+
+    }
+
+    if(
+        keys["d"] &&
+        !player.blocking &&
+        !player.attack
+    ){
+
+        player.x += 4;
+        player.facing = 1;
+
+    }
+
+    if(
+        keys["w"] &&
+        player.dodging <= 0 &&
+        !player.attack
+    ){
+
+        player.dodging = 15;
+
+        player.energy =
+            Math.max(
+                0,
+                player.energy - 10
+            );
+
+    }
+
+    if(keys["j"])
+        attack(player,"left");
+
+    if(keys["k"])
+        attack(player,"right");
+
+    player.x =
+        Math.max(
+            W*.15,
+            Math.min(
+                W*.85,
+                player.x
+            )
+        );
+
+    updateFighter(
+        player,
+        enemy
+    );
+
+}
+
+/* =====================================================
+   IA
+===================================================== */
+
+function updateEnemy(){
+
+    const d =
+        difficultyData[
+            selectedDifficulty
+        ];
+
+    const distance =
+        Math.abs(
+            player.x - enemy.x
+        );
+
+    enemy.facing =
+        player.x > enemy.x
+        ? 1
+        : -1;
+
+    if(
+        distance > 160 &&
+        !enemy.attack &&
+        !enemy.blocking
+    ){
+
+        enemy.x +=
+            Math.sign(
+                player.x - enemy.x
+            ) *
+            d.speed;
+
+    }
+
+    enemy.aiTimer--;
+
+    if(enemy.aiTimer <= 0){
+
+        enemy.aiTimer =
+            d.reaction +
+            Math.random() *
+            d.reaction;
+
+        if(distance < 180){
+
+            const chance =
+                Math.random();
+
+            if(
+                chance < d.chance
+            ){
+
+                attack(
+                    enemy,
+                    Math.random() < .5
+                    ? "left"
+                    : "right"
+                );
+
+            }else if(
+                chance < .82
+            ){
+
+                enemy.blocking = true;
+
+                setTimeout(() => {
+
+                    enemy.blocking = false;
+
+                }, 400);
+
+            }else{
+
+                enemy.dodging = 12;
+
+            }
+
+        }
+
+    }
+
+    updateFighter(
+        enemy,
+        player
+    );
+
+}
+
+/* =====================================================
+   ACTUALIZAR LUCHADOR
+===================================================== */
+
+function updateFighter(
+    fighter,
+    opponent
+){
+
+    if(fighter.cooldown > 0)
+        fighter.cooldown--;
+
+    if(fighter.hit > 0)
+        fighter.hit--;
+
+    if(fighter.dodging > 0){
+
+        fighter.dodging--;
+
+        fighter.x +=
+            fighter.facing * 5;
+
+    }
+
+    if(fighter.attack){
+
+        fighter.attackTimer--;
+
+        if(
+            fighter.attackTimer === 10
+        ){
+
+            const distance =
+                Math.abs(
+                    fighter.x -
+                    opponent.x
+                );
+
+            if(distance < 175){
+
+                let damage =
+                    fighter.attack === "left"
+                    ? 7
+                    : 11;
+
+                if(opponent.blocking){
+
+                    damage *= .2;
+
+                    createParticles(
+                        opponent.x,
+                        opponent.y - 100,
+                        "#00d9ff",
+                        12
+                    );
+
+                    floatingText(
+                        opponent.x,
+                        opponent.y - 145,
+                        "BLOCK"
+                    );
+
+                }
+
+                if(
+                    opponent.dodging > 0
+                ){
+
+                    damage = 0;
+
+                }
+
+                if(damage > 0){
+
+                    opponent.health -=
+                        damage;
+
+                    opponent.hit = 8;
+
+                    fighter.energy =
+                        Math.min(
+                            100,
+                            fighter.energy + 6
+                        );
+
+                    createImpact(
+                        opponent.x,
+                        opponent.y - 100
+                    );
+
+                    fighter.combo++;
+                    fighter.comboTimer = 70;
+
+                    if(
+                        fighter === player
+                    ){
+
+                        score +=
+                            Math.round(
+                                damage * 10
+                            );
+
+                        showCombo(
+                            fighter.combo
+                        );
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        if(
+            fighter.attackTimer <= 0
+        ){
+
+            fighter.attack = null;
+
+        }
+
+    }
+
+    if(fighter.comboTimer > 0)
+        fighter.comboTimer--;
+
+    if(fighter.comboTimer <= 0)
+        fighter.combo = 0;
+
+}
+
+/* =====================================================
+   EFECTOS
+===================================================== */
+
+function createParticles(
+    x,
+    y,
+    color,
+    amount
+){
+
+    for(
+        let i=0;
+        i<amount;
+        i++
+    ){
+
+        const angle =
+            Math.random() *
+            Math.PI * 2;
+
+        const speed =
+            2 +
+            Math.random() * 6;
+
+        particles.push({
+
+            x:x,
+            y:y,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed,
+
+            life:
+                20 +
+                Math.random()*20,
+
+            size:
+                2 +
+                Math.random()*5,
+
+            color:color
+
+        });
+
+    }
+
+}
+
+function createImpact(x,y){
+
+    createParticles(
+        x,
+        y,
+        "#ffdc4a",
+        18
+    );
+
+    createParticles(
+        x,
+        y,
+        "#ffffff",
+        7
+    );
+
+}
+
+function floatingText(
+    x,
+    y,
+    text
+){
+
+    floatingTexts.push({
+
+        x:x,
+        y:y,
+        text:text,
+        life:40
+
+    });
+
+}
+
+function showCombo(number){
+
+    if(number < 2)
+        return;
+
+    const element =
+        document.getElementById(
+            "combo"
+        );
+
+    element.textContent =
+        "COMBO x" + number;
+
+    element.style.opacity = 1;
+
+    clearTimeout(
+        window.comboTimer
+    );
+
+    window.comboTimer =
+        setTimeout(() => {
+
+            element.style.opacity = 0;
+
+        },700);
+
+}
+
+function updateEffects(){
+
+    particles.forEach(p => {
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vx *= .95;
+        p.vy *= .95;
+
+        p.vy += .1;
+
+        p.life--;
+
+    });
+
+    particles =
+        particles.filter(
+            p => p.life > 0
+        );
+
+    floatingTexts.forEach(t => {
+
+        t.y -= 1;
+        t.life--;
+
+    });
+
+    floatingTexts =
+        floatingTexts.filter(
+            t => t.life > 0
+        );
+
+}
+
+/* =====================================================
+   ARENA
+===================================================== */
+
+function drawArena(){
+
+    const background =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    background.addColorStop(
+        0,
+        "#090b12"
+    );
+
+    background.addColorStop(
+        .55,
+        "#18151c"
+    );
+
+    background.addColorStop(
+        1,
+        "#030305"
+    );
+
+    ctx.fillStyle =
+        background;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    /* luces */
+
+    for(
+        let i=0;
+        i<8;
+        i++
+    ){
+
+        const x =
+            i * W / 7;
+
+        const light =
+            ctx.createRadialGradient(
+                x,
+                70,
+                0,
+                x,
+                70,
+                180
+            );
+
+        light.addColorStop(
+            0,
+            "rgba(255,255,255,.22)"
+        );
+
+        light.addColorStop(
+            1,
+            "rgba(255,255,255,0)"
+        );
+
+        ctx.fillStyle =
+            light;
+
+        ctx.fillRect(
+            x-180,
+            0,
+            360,
+            200
+        );
+
+    }
+
+    /* publico */
+
+    for(
+        let i=0;
+        i<90;
+        i++
+    ){
+
+        const x =
+            i / 90 * W;
+
+        const y =
+            H*.43 +
+            Math.sin(i*2)*10;
+
+        ctx.fillStyle =
+            i%3===0
+            ? "rgba(255,30,60,.4)"
+            : "rgba(170,180,200,.25)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            5 + i%4,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+    /* ring */
+
+    ctx.fillStyle =
+        "#10151c";
+
+    ctx.fillRect(
+        W*.10,
+        H*.70,
+        W*.80,
+        H*.17
+    );
+
+    ctx.fillStyle =
+        "#26303a";
+
+    ctx.fillRect(
+        W*.13,
+        H*.70,
+        W*.74,
+        H*.14
+    );
+
+    /* cuerdas */
+
+    const ropes =
+        [.53,.59,.65];
+
+    ropes.forEach(
+        (r,i) => {
+
+            ctx.strokeStyle =
+                i===1
+                ? "#ffffff"
+                : "#d71939";
+
+            ctx.lineWidth =
+                i===1
+                ? 5
+                : 3;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                W*.09,
+                H*r
+            );
+
+            ctx.lineTo(
+                W*.91,
+                H*r
+            );
+
+            ctx.stroke();
+
+        }
+    );
+
+    /* postes */
+
+    [W*.10,W*.90].forEach(
+        x => {
+
+            ctx.fillStyle =
+                "#c5c8cd";
+
+            ctx.fillRect(
+                x-6,
+                H*.47,
+                12,
+                H*.28
+            );
+
+        }
+    );
+
+}
+
+/* =====================================================
+   DIBUJAR LUCHADOR
+===================================================== */
+
+function drawFighter(
+    fighter,
+    isPlayer
+){
+
+    const x = fighter.x;
+    const y = fighter.y;
+
+    ctx.save();
+
+    if(fighter.hit > 0)
+        ctx.globalAlpha = .65;
+
+    /* sombra */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.55)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y+8,
+        65,
+        14,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* piernas */
+
+    ctx.fillStyle =
+        isPlayer
+        ? "#1c2734"
+        : "#302127";
+
+    ctx.fillRect(
+        x-29,
+        y-15,
+        21,
+        65
+    );
+
+    ctx.fillRect(
+        x+8,
+        y-15,
+        21,
+        65
+    );
+
+    /* zapatos */
+
+    ctx.fillStyle =
+        isPlayer
+        ? "#e8e8e8"
+        : "#cf1939";
+
+    ctx.fillRect(
+        x-38,
+        y+40,
+        35,
+        13
+    );
+
+    ctx.fillRect(
+        x+7,
+        y+40,
+        35,
+        13
+    );
+
+    /* torso */
+
+    let body =
+        ctx.createLinearGradient(
+            x-30,
+            y-105,
+            x+30,
+            y
+        );
+
+    if(isPlayer){
+
+        body.addColorStop(
+            0,
+            "#344c62"
+        );
+
+        body.addColorStop(
+            1,
+            "#080d13"
+        );
+
+    }else{
+
+        body.addColorStop(
+            0,
+            enemy.color
+        );
+
+        body.addColorStop(
+            1,
+            "#12080d"
+        );
+
+    }
+
+    ctx.fillStyle = body;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x-33,
+        y-105,
+        66,
+        90,
+        18
+    );
+
+    ctx.fill();
+
+    /* cuello */
+
+    ctx.fillStyle =
+        "#b98167";
+
+    ctx.fillRect(
+        x-10,
+        y-120,
+        20,
+        20
+    );
+
+    /* cabeza */
+
+    ctx.fillStyle =
+        "#c99072";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y-140,
+        31,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* cabello */
+
+    ctx.fillStyle =
+        "#15151a";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y-150,
+        32,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* ojos */
+
+    ctx.fillStyle =
+        "#111";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x-10,
+        y-141,
+        3,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x+10,
+        y-141,
+        3,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* nariz */
+
+    ctx.strokeStyle =
+        "#704c40";
+
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x,
+        y-137
+    );
+
+    ctx.lineTo(
+        x-4,
+        y-127
+    );
+
+    ctx.lineTo(
+        x+5,
+        y-127
+    );
+
+    ctx.stroke();
+
+    /* brazos */
+
+    drawGlove(
+        fighter,
+        isPlayer,
+        true
+    );
+
+    drawGlove(
+        fighter,
+        isPlayer,
+        false
+    );
+
+    /* cinturón */
+
+    ctx.fillStyle =
+        isPlayer
+        ? "#00c9ed"
+        : "#ffd43b";
+
+    ctx.fillRect(
+        x-32,
+        y-26,
+        64,
+        8
+    );
+
+    ctx.restore();
+
+}
+
+/* =====================================================
+   GUANTES
+===================================================== */
+
+function drawGlove(
+    fighter,
+    isPlayer,
+    front
+){
+
+    const side =
+        front
+        ? fighter.facing
+        : -fighter.facing;
+
+    const active =
+        fighter.attack &&
+        (
+            (
+                fighter.attack==="left" &&
+                front
+            ) ||
+            (
+                fighter.attack==="right" &&
+                !front
+            )
+        );
+
+    let gx =
+        fighter.x +
+        side *
+        (active ? 85 : 42);
+
+    let gy =
+        fighter.y -
+        (active ? 100 : 76);
+
+    if(active){
+
+        const total =
+            fighter.attack==="left"
+            ? 20
+            : 28;
+
+        const progress =
+            1 -
+            fighter.attackTimer /
+            total;
+
+        gx =
+            fighter.x +
+            side *
+            (
+                42 +
+                Math.sin(
+                    progress*Math.PI
+                ) * 43
+            );
+
+        gy =
+            fighter.y -
+            76 -
+            Math.sin(
+                progress*Math.PI
+            ) * 25;
+
+    }
+
+    /* brazo */
+
+    ctx.strokeStyle =
+        "#976653";
+
+    ctx.lineWidth = 15;
+
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        fighter.x + side*28,
+        fighter.y - 85
+    );
+
+    ctx.lineTo(
+        gx,
+        gy
+    );
+
+    ctx.stroke();
+
+    /* guante */
+
+    ctx.fillStyle =
+        isPlayer
+        ? "#ed2849"
+        : fighter.color;
+
+    ctx.shadowBlur =
+        active
+        ? 20
+        : 0;
+
+    ctx.shadowColor =
+        isPlayer
+        ? "#ff3153"
+        : fighter.color;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        gx,
+        gy,
+        19,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+
+}
+
+/* =====================================================
+   PARTICULAS
+===================================================== */
+
+function drawEffects(){
+
+    particles.forEach(
+        p => {
+
+            ctx.globalAlpha =
+                Math.max(
+                    0,
+                    p.life/40
+                );
+
+            ctx.fillStyle =
+                p.color;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                p.x,
+                p.y,
+                p.size,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+        }
+    );
+
+    ctx.globalAlpha = 1;
+
+    floatingTexts.forEach(
+        t => {
+
+            ctx.globalAlpha =
+                t.life/40;
+
+            ctx.fillStyle =
+                "white";
+
+            ctx.font =
+                "bold 23px Arial";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                t.text,
+                t.x,
+                t.y
+            );
+
+        }
+    );
+
+    ctx.globalAlpha = 1;
+
+}
+
+/* =====================================================
+   HUD
+===================================================== */
+
+function updateHUD(){
+
+    document.getElementById(
+        "playerHealth"
+    ).style.width =
+        Math.max(
+            0,
+            player.health
+        ) + "%";
+
+    document.getElementById(
+        "enemyHealth"
+    ).style.width =
+        Math.max(
+            0,
+            enemy.health /
+            enemy.maxHealth *
+            100
+        ) + "%";
+
+    document.getElementById(
+        "playerEnergy"
+    ).style.width =
+        player.energy + "%";
+
+    document.getElementById(
+        "enemyEnergy"
+    ).style.width =
+        enemy.energy + "%";
+
+    document.getElementById(
+        "timer"
+    ).textContent =
+        Math.max(
+            0,
+            time
+        );
+
+    document.getElementById(
+        "score"
+    ).textContent =
+        score;
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        player.blocking
+        ? "BLOQUEANDO"
+        : player.dodging > 0
+        ? "ESQUIVANDO"
+        : "LISTO";
+
+}
+
+/* =====================================================
+   FIN DEL JUEGO
+===================================================== */
+
+function finishGame(
+    title,
+    text
+){
+
+    if(gameOver)
+        return;
+
+    gameOver = true;
+
+    document
+        .getElementById(
+            "resultScreen"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+    document.getElementById(
+        "resultTitle"
+    ).textContent =
+        title;
+
+    document.getElementById(
+        "resultText"
+    ).textContent =
+        text +
+        " | PUNTOS: " +
+        score;
+
+}
+
+/* =====================================================
+   SIGUIENTE PELEA
+===================================================== */
+
+function nextCareerFight(){
+
+    careerEnemy++;
+
+    if(
+        careerEnemy >=
+        enemies.length
+    ){
+
+        finishGame(
+            "¡CAMPEÓN!",
+            "COMPLETASTE LA CARRERA"
+        );
+
+        return;
+
+    }
+
+    round++;
+
+    setupFight();
+
+    player.health =
+        Math.min(
+            100,
+            player.health + 25
+        );
+
+    floatingText(
+        W/2,
+        H*.35,
+        "SIGUIENTE RIVAL"
+    );
+
+}
+
+/* =====================================================
+   COMPROBAR
+===================================================== */
+
+function checkGame(){
+
+    if(enemy.health <= 0){
+
+        score += 500;
+
+        if(
+            selectedMode === "career"
+        ){
+
+            nextCareerFight();
+
+        }else if(
+            selectedMode === "survival"
+        ){
+
+            round++;
+
+            setupFight();
+
+        }else{
+
+            finishGame(
+                "¡VICTORIA!",
+                "GANASTE EL COMBATE"
+            );
+
+        }
+
+        return;
+
+    }
+
+    if(player.health <= 0){
+
+        finishGame(
+            "¡DERROTA!",
+            "EL RIVAL GANÓ"
+        );
+
+        return;
+
+    }
+
+    if(
+        time <= 0 &&
+        selectedMode !== "survival"
+    ){
+
+        if(
+            player.health >
+            enemy.health
+        ){
+
+            finishGame(
+                "¡VICTORIA!",
+                "GANASTE POR DECISIÓN"
+            );
+
+        }else{
+
+            finishGame(
+                "¡DERROTA!",
+                "PERDISTE POR DECISIÓN"
+            );
+
+        }
+
+    }
+
+}
+
+/* =====================================================
+   LOOP PRINCIPAL
+===================================================== */
+
+let lastTime = 0;
+
+function gameLoop(timestamp){
+
+    if(!playing)
+        return;
+
+    let delta =
+        timestamp -
+        lastTime;
+
+    lastTime = timestamp;
+
+    if(delta > 100)
+        delta = 16;
+
+    if(!gameOver){
+
+        timerCounter += delta;
+
+        if(
+            timerCounter >= 1000
+        ){
+
+            time--;
+
+            timerCounter = 0;
+
+        }
+
+        updatePlayer();
+
+        updateEnemy();
+
+        updateEffects();
+
+        checkGame();
+
+        updateHUD();
+
+    }
+
+    drawArena();
+
+    drawFighter(
+        player,
+        true
+    );
+
+    drawFighter(
+        enemy,
+        false
+    );
+
+    drawEffects();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+</script>
+
+</body>
+</html>
