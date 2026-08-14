@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Guerreros</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+
+background:
+linear-gradient(rgba(0,0,0,.80),rgba(0,0,0,.80)),
+url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1500&q=80");
+
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+overflow-x:hidden;
+color:white;
+
+}
+
+header{
+
+background:#7a0000;
+padding:25px;
+text-align:center;
+font-size:35px;
+font-weight:bold;
+letter-spacing:5px;
+border-bottom:4px solid gold;
+box-shadow:0 0 30px red;
+
+}
+
+.formulario{
+
+width:420px;
+max-width:90%;
+margin:40px auto;
+background:rgba(0,0,0,.75);
+padding:35px;
+border-radius:20px;
+border:2px solid red;
+box-shadow:0 0 25px red;
+animation:entrada 1s;
+
+}
+
+@keyframes entrada{
+
+from{
+
+opacity:0;
+transform:translateY(-80px);
+
+}
+
+to{
+
+opacity:1;
+transform:translateY(0);
+
+}
+
+}
+
+h2{
+
+text-align:center;
+color:gold;
+margin-bottom:30px;
+font-size:35px;
+
+}
+
+label{
+
+display:block;
+margin-top:18px;
+margin-bottom:8px;
+font-weight:bold;
+
+}
+
+input,select{
+
+width:100%;
+padding:14px;
+border:none;
+outline:none;
+border-radius:10px;
+font-size:16px;
+transition:.4s;
+
+}
+
+input:focus,
+select:focus{
+
+box-shadow:0 0 20px gold;
+transform:scale(1.03);
+
+}
+
+button{
+
+margin-top:20px;
+width:100%;
+padding:16px;
+font-size:18px;
+font-weight:bold;
+background:red;
+border:none;
+border-radius:12px;
+cursor:pointer;
+color:white;
+transition:.4s;
+
+}
+
+button:hover{
+
+background:gold;
+color:black;
+transform:scale(1.05);
+box-shadow:0 0 20px gold;
+
+}
+
+.cambiarbtn{
+
+background:#333;
+font-size:15px;
+
+}
+
+.cambiarbtn:hover{
+
+background:#2196f3;
+color:white;
+
+}
+
+.panel{
+
+width:92%;
+max-width:650px;
+margin:40px auto;
+background:rgba(0,0,0,.8);
+padding:35px;
+border-radius:20px;
+border:2px solid gold;
+box-shadow:0 0 30px gold;
+display:none;
+animation:aparece .8s;
+
+}
+
+@keyframes aparece{
+
+from{
+
+opacity:0;
+transform:scale(.8);
+
+}
+
+to{
+
+opacity:1;
+transform:scale(1);
+
+}
+
+}
+
+.panel h2{
+
+color:gold;
+font-size:30px;
+
+}
+
+.panel .saludo{
+
+color:lime;
+font-size:22px;
+margin:10px 0 25px;
+
+}
+
+.tarjeta{
+
+margin-top:20px;
+padding:20px;
+border-radius:15px;
+background:#141414;
+border:2px solid red;
+text-align:left;
+
+}
+
+.tarjeta h3{
+
+color:gold;
+margin-bottom:15px;
+
+}
+
+.tarjeta p{
+
+font-size:18px;
+margin:10px 0;
+
+}
+
+.botones{
+
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+margin-top:25px;
+
+}
+
+.botones button{
+
+width:auto;
+padding:14px 25px;
+
+}
+
+footer{
+
+margin-top:40px;
+padding:20px;
+text-align:center;
+background:black;
+border-top:3px solid gold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+⚔ REGISTRO DE GUERREROS ⚔
+
+</header>
+
+<div class="formulario" id="formulario">
+
+<h2 id="tituloForm">Inicia Sesión</h2>
+
+<label>Correo Electrónico</label>
+
+<input type="email" id="correo" placeholder="ejemplo@gmail.com">
+
+<label>Contraseña</label>
+
+<input type="password" id="clave" placeholder="Tu contraseña">
+
+<div id="camposExtra">
+
+<label>Nombre Completo</label>
+
+<input type="text" id="nombre" placeholder="Escribe tu nombre">
+
+<label>Edad</label>
+
+<input type="number" id="edad" placeholder="Tu edad">
+
+<label>Tipo de Peleador</label>
+
+<select id="tipo">
+
+<option>Selecciona...</option>
+<option>Boxeador 🥊</option>
+<option>Karateka 🥋</option>
+<option>Luchador 🤼</option>
+<option>Kick Boxing 👊</option>
+<option>MMA 🔥</option>
+
+</select>
+
+</div>
+
+<button onclick="entrar()" id="botonEntrar">▶ Iniciar Sesión</button>
+
+<button class="cambiarbtn" onclick="cambiarModo()" id="botonModo">No tengo cuenta, registrarme</button>
+
+<a href="index.html">
+
+<button class="cambiarbtn">🏠 Volver al Inicio</button>
+
+</a>
+
+</div>
+
+<div class="panel" id="panel">
+
+<h2>⚔ BIENVENIDO AL TORNEO ⚔</h2>
+
+<p class="saludo" id="saludo"></p>
+
+<div class="tarjeta">
+
+<h3>PERFIL DEL GUERRERO</h3>
+
+<p id="pnombre"></p>
+
+<p id="pedad"></p>
+
+<p id="pcorreo"></p>
+
+<p id="ptipo"></p>
+
+</div>
+
+<div class="botones">
+
+<a href="juego.html"><button>🎮 Juego</button></a>
+
+<a href="blog.html"><button>📖 Blog</button></a>
+
+<a href="index.html"><button>🏠 Menú</button></a>
+
+<button onclick="salir()">🔓 Cerrar Sesión</button>
+
+</div>
+
+</div>
+
+<footer>
+
+⚔ Nunca abandones el entrenamiento. Los campeones se forman con disciplina. ⚔
+
+</footer>
+
+<script>
+
+let modoRegistro=false;
+let usuarioActual=null;
+
+function cambiarModo(){
+
+modoRegistro=!modoRegistro;
+
+if(modoRegistro){
+
+document.getElementById("tituloForm").innerHTML="Crea tu Cuenta";
+document.getElementById("camposExtra").style.display="block";
+document.getElementById("botonEntrar").innerHTML="📝 Registrarme";
+document.getElementById("botonModo").innerHTML="Ya tengo cuenta, iniciar sesión";
+
+}else{
+
+document.getElementById("tituloForm").innerHTML="Inicia Sesión";
+document.getElementById("camposExtra").style.display="none";
+document.getElementById("botonEntrar").innerHTML="▶ Iniciar Sesión";
+document.getElementById("botonModo").innerHTML="No tengo cuenta, registrarme";
+
+}
+
+}
+
+function entrar(){
+
+let correo=document.getElementById("correo").value;
+let clave=document.getElementById("clave").value;
+
+if(correo==""||clave==""){
+
+alert("Completa el correo y la contraseña.");
+
+return;
+
+}
+
+if(modoRegistro){
+
+registrar();
+
+}else{
+
+iniciarSesion();
+
+}
+
+}
+
+function registrar(){
+
+let correo=document.getElementById("correo").value;
+let clave=document.getElementById("clave").value;
+let nombre=document.getElementById("nombre").value;
+let edad=document.getElementById("edad").value;
+let tipo=document.getElementById("tipo").value;
+
+if(nombre==""||edad==""||tipo=="Selecciona..."){
+
+alert("Completa todos los campos.");
+
+return;
+
+}
+
+if(clave.length<6){
+
+alert("La contraseña debe tener al menos 6 caracteres.");
+
+return;
+
+}
+
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"[]");
+
+let existe=usuarios.find(u=>u.correo==correo);
+
+if(existe){
+
+alert("Ese correo ya está registrado. Inicia sesión.");
+
+return;
+
+}
+
+usuarios.push({nombre:nombre,edad:edad,correo:correo,clave:clave,tipo:tipo});
+
+localStorage.setItem("usuarios",JSON.stringify(usuarios));
+
+usuarioActual={nombre:nombre,edad:edad,correo:correo,tipo:tipo};
+
+mostrarPanel();
+
+}
+
+function iniciarSesion(){
+
+let correo=document.getElementById("correo").value;
+let clave=document.getElementById("clave").value;
+
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"[]");
+
+let encontrado=usuarios.find(u=>u.correo==correo&&u.clave==clave);
+
+if(!encontrado){
+
+alert("Correo o contraseña incorrectos.");
+
+return;
+
+}
+
+usuarioActual=encontrado;
+
+mostrarPanel();
+
+}
+
+function mostrarPanel(){
+
+document.getElementById("formulario").style.display="none";
+document.getElementById("panel").style.display="block";
+
+document.getElementById("saludo").innerHTML=
+"👋 ¡Hola, "+usuarioActual.nombre+"! El torneo te espera.";
+
+document.getElementById("pnombre").innerHTML="👤 Nombre: "+usuarioActual.nombre;
+
+document.getElementById("pedad").innerHTML="🎂 Edad: "+usuarioActual.edad+" años";
+
+document.getElementById("pcorreo").innerHTML="📧 Correo: "+usuarioActual.correo;
+
+document.getElementById("ptipo").innerHTML="🥇 Especialidad: "+usuarioActual.tipo;
+
+document.getElementById("panel").scrollIntoView({behavior:"smooth"});
+
+}
+
+function salir(){
+
+usuarioActual=null;
+
+document.getElementById("formulario").style.display="block";
+document.getElementById("panel").style.display="none";
+
+document.getElementById("correo").value="";
+document.getElementById("clave").value="";
+
+if(modoRegistro)cambiarModo();
+
+}
+
+</script>
+
+</body>
+</html>

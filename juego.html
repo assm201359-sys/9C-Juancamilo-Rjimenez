@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Torneo Pixelado</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#0f0f23;
+font-family:"Press Start 2P", monospace;
+color:#fff;
+text-align:center;
+image-rendering:pixelated;
+overflow-x:hidden;
+}
+
+header{
+padding:22px;
+background:#1b1b3a;
+border-bottom:4px solid #00ff9d;
+color:#00ff9d;
+font-size:16px;
+text-shadow:3px 3px 0 #7a00ff;
+letter-spacing:2px;
+}
+
+.caja{
+width:92%;
+max-width:640px;
+margin:35px auto;
+background:#1b1b3a;
+padding:28px;
+border:6px solid #7a00ff;
+box-shadow:0 0 0 6px #00ff9d, 8px 8px 0 #000;
+position:relative;
+}
+
+#historia{
+font-size:10px;
+line-height:22px;
+color:#b9b9ff;
+margin-bottom:20px;
+}
+
+canvas{
+display:block;
+margin:15px auto;
+background:#26264d;
+border:4px solid #3a3a6b;
+box-shadow:inset 0 0 0 4px #000;
+}
+
+.barra{
+width:80%;
+max-width:360px;
+height:22px;
+margin:10px auto;
+background:#0f0f23;
+border:3px solid #000;
+box-shadow:0 0 0 2px #7a00ff;
+position:relative;
+}
+
+.barra i{
+position:absolute;
+left:0;
+top:0;
+height:100%;
+width:100%;
+background:#ff004c;
+}
+
+.barra span{
+position:absolute;
+width:100%;
+top:5px;
+font-size:9px;
+color:#fff;
+text-shadow:2px 2px 0 #000;
+z-index:2;
+}
+
+#vidaJugador i{ background:#00ff9d; }
+#vidaEnemigo i{ background:#ff004c; }
+
+#nombre{
+font-size:12px;
+color:#ffd700;
+margin-top:10px;
+text-shadow:3px 3px 0 #000;
+}
+
+#turno{
+font-size:9px;
+color:#ff004c;
+margin:14px 0;
+}
+
+button{
+font-family:"Press Start 2P", monospace;
+font-size:10px;
+padding:14px 12px;
+margin:8px;
+border:4px solid #000;
+color:#fff;
+background:#7a00ff;
+cursor:pointer;
+box-shadow:4px 4px 0 #000;
+text-transform:uppercase;
+}
+
+button:hover{
+background:#00ff9d;
+color:#000;
+transform:translate(-2px,-2px);
+box-shadow:6px 6px 0 #000;
+}
+
+button:disabled{
+background:#3a3a3a;
+color:#666;
+cursor:not-allowed;
+transform:none;
+box-shadow:4px 4px 0 #000;
+}
+
+#mensaje{
+margin-top:20px;
+font-size:11px;
+line-height:24px;
+color:#ffd700;
+min-height:60px;
+}
+
+footer{
+margin-top:30px;
+padding:18px;
+background:#0a0a1a;
+border-top:4px solid #7a00ff;
+color:#b9b9ff;
+font-size:8px;
+line-height:18px;
+}
+
+#curaSobrante{
+font-size:8px;
+color:#00ff9d;
+margin-top:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+&#9654; EL TORNEO PIXELADO &#9650;
+</header>
+
+<div class="caja">
+
+<p id="historia">
+GANAS = DERROTAS 4 ENEMIGOS<br>
+PERDES = SI TU VIDA LLEGA A 0<br>
+CRITICO = GOLPE DURO AL AZAR<br>
+RECUPERA VIDA CON POCIONES<br>
+CANTIDAD LIMITADA. SUERTE!
+</p>
+
+<canvas id="sprite" width="96" height="96"></canvas>
+
+<h2 id="nombre">SLIME</h2>
+
+<div id="vidaEnemigo" class="barra">
+<i id="barraEnemigo"></i>
+<span>ENEMIGO</span>
+</div>
+
+<h2 id="turno">&#8594; TU TURNO &#8592;</h2>
+
+<div id="vidaJugador" class="barra">
+<i id="barraJugador"></i>
+<span>GUERRERO</span>
+</div>
+
+<button onclick="atacar()">&#9876; ATACAR</button>
+<button onclick="curarse()">&#9829; POCION</button>
+
+<h2 id="curaSobrante">POCIONES: 3</h2>
+
+<h2 id="mensaje">DERRROTA A TODOS!</h2>
+
+<a href="index.html">
+<button>&#127968; VOLVER AL MENU</button>
+</a>
+
+</div>
+
+<footer>
+ARCADE 8-BIT - NIVEL 9C<br>
+PRESS START TO CONTINUE
+</footer>
+
+<script>
+
+const SPRITES={
+slime:{
+colores:["","#00ff41","#005c17","#002a0a","#ffffff","#000000"],
+mapa:[
+"0000000000000000",
+"0000002222000000",
+"0000022222220000",
+"0002222222222200",
+"0002222222222200",
+"0022222222222220",
+"0222222222222222",
+"0222442222244222",
+"0222452222254222",
+"0222222222222222",
+"0222222222222222",
+"0222333333333222",
+"0222222222222222",
+"0022222222222200",
+"0022222222222200",
+"0000000000000000"
+]},
+goblin:{
+colores:["","#7fff00","#1d5c00","#0a2b00","#ffffff","#ff004c"],
+mapa:[
+"0000000000000000",
+"0200022222000200",
+"0220022222002200",
+"0222222222222220",
+"0222222222222220",
+"0022222222222200",
+"0022222222222200",
+"0022442222244200",
+"0022452222254200",
+"0022222222222200",
+"0022233222332200",
+"0022222222222200",
+"0002222222222000",
+"0000222222220000",
+"0000000000000000",
+"0000000000000000"
+]},
+esqueleto:{
+colores:["","#f0f0f0","#a0a0a0","#2b2b2b","#ff004c"],
+mapa:[
+"0000000000000000",
+"0000000000000000",
+"0002222222222000",
+"0002222222222000",
+"0022222222222200",
+"0022442222244200",
+"0022442222244200",
+"0022222222222200",
+"0022232223222200",
+"0022222222222200",
+"0002222222222000",
+"0000002222000000",
+"0000002222000000",
+"0000000000000000",
+"0000000000000000",
+"0000000000000000"
+]},
+dragon:{
+colores:["","#ff004c","#7a0014","#2b0000","#ffffff","#000000","#ffd700"],
+mapa:[
+"0000000000000000",
+"0000600000000600",
+"0000660000006600",
+"0022222222222220",
+"0222222222222222",
+"0222222222222222",
+"0022442222244200",
+"0022452222254200",
+"0222222222222222",
+"0222222222222222",
+"0222332222233222",
+"0222222222222222",
+"0222222222222222",
+"0022222222222200",
+"0022222222222200",
+"0000000000000000"
+]}
+};
+
+const enemigos=[
+{n:"SLIME",     v:70,  crit:20, dMin:5,  dMax:13, s:SPRITES.slime},
+{n:"GOBLIN",    v:100, crit:15, dMin:8,  dMax:18, s:SPRITES.goblin},
+{n:"ESQUELETO", v:130, crit:10, dMin:10, dMax:20, s:SPRITES.esqueleto},
+{n:"DRAGON",    v:170, crit:25, dMin:12, dMax:25, s:SPRITES.dragon}
+];
+
+let vidaJugador=100;
+let vidaEnemigo=0;
+let enemigo=0;
+let pociones=3;
+let atacando=false;
+
+function dibujar(sprite){
+const c=document.getElementById("sprite");
+const ctx=c.getContext("2d");
+ctx.clearRect(0,0,96,96);
+const tam=6;
+for(let y=0;y<sprite.mapa.length;y++){
+for(let x=0;x<sprite.mapa[y].length;x++){
+const cid=parseInt(sprite.mapa[y][x],10);
+if(cid===0)continue;
+ctx.fillStyle=sprite.colores[cid];
+ctx.fillRect(x*tam,y*tam,tam,tam);
+}
+}
+}
+
+function cargarEnemigo(){
+const e=enemigos[enemigo];
+vidaEnemigo=e.v;
+dibujar(e.s);
+document.getElementById("nombre").innerHTML=e.n;
+document.getElementById("turno").innerHTML="&#8594; ENEMIGO "+(enemigo+1)+" DE 4 &#8592;";
+actualizarBarras();
+}
+
+function actualizarBarras(){
+document.getElementById("barraEnemigo").style.width=Math.max(0,vidaEnemigo)+"%";
+document.getElementById("barraJugador").style.width=Math.max(0,vidaJugador)+"%";
+document.getElementById("vidaEnemigo").querySelector("span").innerHTML=
+"ENEMIGO "+vidaEnemigo+"/"+enemigos[enemigo].v;
+document.getElementById("vidaJugador").querySelector("span").innerHTML=
+"GUERRERO "+vidaJugador+"/100";
+document.getElementById("curaSobrante").innerHTML="POCIONES: "+pociones;
+}
+
+function mensaje(txt){
+document.getElementById("mensaje").innerHTML=txt;
+}
+
+function atacar(){
+if(atacando||vidaEnemigo<=0)return;
+atacando=true;
+
+const e=enemigos[enemigo];
+let daño=Math.floor(Math.random()*(e.dMax-e.dMin+1))+e.dMin;
+let critico=false;
+
+if(Math.random()*100<e.crit){
+daño*=2;
+critico=true;
+}
+
+vidaEnemigo-=daño;
+actualizarBarras();
+mensaje("GOLPE: -"+daño+(critico?" &#10024; CRITICO!":""));
+
+setTimeout(()=>{
+if(vidaEnemigo<=0){
+if(enemigo<enemigos.length-1){
+enemigo++;
+mensaje("&#127873; VICTORIA! APARECE EL SIGUIENTE...");
+setTimeout(()=>{
+cargarEnemigo();
+atacando=false;
+},1400);
+}else{
+mensaje("&#127942; CAMPEON DEL TORNEO! &#127942;");
+document.getElementById("nombre").innerHTML="VICTORIA!";
+atacando=false;
+}
+}else{
+turnoEnemigo();
+}
+},800);
+}
+
+function turnoEnemigo(){
+document.getElementById("turno").innerHTML="&#8594; TURNO DEL ENEMIGO &#8592;";
+setTimeout(()=>{
+const e=enemigos[enemigo];
+let daño=Math.floor(Math.random()*(e.dMax-e.dMin+1))+e.dMin;
+if(Math.random()*100<15)daño*=2;
+
+vidaJugador-=daño;
+actualizarBarras();
+mensaje("&#9888; RECIBES -"+daño+" DE DAÑO");
+
+if(vidaJugador<=0){
+mensaje("&#10060; GAME OVER - RECARGA PARA INTENTAR");
+document.getElementById("nombre").innerHTML="DERROTA";
+atacando=false;
+return;
+}
+
+document.getElementById("turno").innerHTML="&#8594; TU TURNO &#8592;";
+atacando=false;
+},1000);
+}
+
+function curarse(){
+if(atacando||vidaJugador<=0)return;
+if(pociones<=0){
+mensaje("&#10060; NO TE QUEDAN POCIONES");
+return;
+}
+if(vidaJugador>=100){
+mensaje("&#9888; YA TIENES LA VIDA LLENA");
+return;
+}
+pociones--;
+vidaJugador=Math.min(100,vidaJugador+35);
+actualizarBarras();
+mensaje("&#9829; +35 DE VIDA. QUE ALIVIO!");
+atacando=true;
+document.getElementById("turno").innerHTML="&#8594; TURNO DEL ENEMIGO &#8592;";
+setTimeout(()=>{
+turnoEnemigo();
+},800);
+}
+
+cargarEnemigo();
+
+</script>
+
+</body>
+</html>
